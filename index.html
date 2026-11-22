@@ -2,103 +2,176 @@
 <html lang="en">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="theme-color" content="#020304">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#05060b">
+  <title>Aaditya Srivastava — Field Notes from Earth</title>
   <meta name="description" content="Aaditya Srivastava builds and evaluates LLM systems, experiments with voice interfaces, and can't stop looking up at rockets.">
   <meta property="og:title" content="Aaditya Srivastava — Field Notes from Earth">
   <meta property="og:description" content="LLM evaluation, voice interfaces, AI agents, and a love of things that lift off.">
   <meta property="og:type" content="website">
   <meta property="og:url" content="https://arvspace.vercel.app/">
   <meta name="twitter:card" content="summary">
-  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%23030405'/%3E%3Cellipse cx='16' cy='16' rx='12' ry='5' fill='none' stroke='%23d9b879' stroke-width='1.4' transform='rotate(-27 16 16)'/%3E%3Ccircle cx='16' cy='16' r='3.2' fill='%23eee9d9'/%3E%3C/svg%3E">
-  <title>Aaditya Srivastava — Field Notes from Earth</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%2305060b'/%3E%3Cellipse cx='16' cy='16' rx='12' ry='4.6' fill='none' stroke='%239d8cff' stroke-width='1.4' transform='rotate(-24 16 16)'/%3E%3Ccircle cx='16' cy='16' r='3.4' fill='%23ffcf8a'/%3E%3C/svg%3E">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Manrope:wght@400;500;600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-  <a class="skip-link" href="#story">Skip to portfolio</a>
-  <div class="frame" aria-hidden="true"><i></i><i></i><i></i><i></i></div>
-  <header class="masthead">
-    <a class="wordmark" href="#top" aria-label="Aaditya Srivastava home">A<span>·</span>SV</a>
-    <div class="masthead-center"><span class="orbit-glyph" aria-hidden="true">◌</span><span>FIELD NOTES FROM EARTH</span></div>
-    <div class="masthead-right"><span class="live-dot"></span><span>LOCAL TIME</span><time id="clock">00:00</time></div>
+  <a class="skip" href="#work">Skip to work</a>
+  <canvas id="galaxy" aria-hidden="true"></canvas>
+  <div class="scrim" aria-hidden="true"></div>
+
+  <header class="nav">
+    <a class="mark" href="#top" aria-label="Aaditya Srivastava, back to top">
+      <svg viewBox="0 0 32 32" aria-hidden="true"><ellipse cx="16" cy="16" rx="13" ry="5" transform="rotate(-24 16 16)"/><circle cx="16" cy="16" r="3.6"/></svg>
+      <span>Aaditya</span>
+    </a>
+    <nav aria-label="Sections">
+      <a href="#work">Work</a><a href="#about">About</a><a href="#launch">Launch</a><a href="#contact">Contact</a>
+    </nav>
+    <p class="clock"><span class="pulse" aria-hidden="true"></span><time id="clock">--:--</time> on Earth</p>
   </header>
-  <main id="story">
-    <div class="story-track" id="top">
-      <div class="chart-sticky">
-        <canvas id="cosmos" aria-hidden="true"></canvas>
-        <div class="grain" aria-hidden="true"></div><div class="chart-vignette" aria-hidden="true"></div>
-        <div class="chart-meta"><span id="chart-coordinate">ORIGIN / EARTH</span><span id="chart-chapter">00 / INTRODUCTION</span></div>
-        <nav class="chart-nav" aria-label="Portfolio sections">
-          <a class="nav-node is-active" href="#top" data-scene-link="0"><span>00</span><b>HOME</b></a>
-          <a class="nav-node" href="#evalforge" data-scene-link="1"><span>01</span><b>EVALFORGE</b></a>
-          <a class="nav-node" href="#voice-cursor" data-scene-link="2"><span>02</span><b>VOICE CURSOR</b></a>
-          <a class="nav-node" href="#ai-agents" data-scene-link="3"><span>03</span><b>AI AGENTS</b></a>
-          <a class="nav-node" href="#about" data-scene-link="4"><span>04</span><b>ABOUT</b></a>
-          <a class="nav-node passion-node" href="#passion" data-scene-link="5"><span>05</span><b>THE SKY</b></a>
-          <a class="nav-node" href="#contact" data-scene-link="6"><span>06</span><b>CONTACT</b></a>
-        </nav>
-        <section class="scene-card home-card is-active" data-scene="0" aria-labelledby="home-title">
-          <p class="scene-kicker">A SMALL PLANET, A LOT TO WONDER ABOUT</p><h1 id="home-title">Aaditya<br>Srivastava</h1>
-          <p class="scene-description">I build and evaluate LLM systems, experiment with new ways to control software, and spend the rest of my time looking up at rockets.</p>
-          <a class="scene-action" href="#evalforge">ENTER THE ORBIT <span>↓</span></a>
-          <p class="scene-hint">Scroll, or use <kbd>↑</kbd> <kbd>↓</kbd> to move between stops</p>
-        </section>
-        <section class="scene-card project-card" data-scene="1" aria-labelledby="eval-title" aria-hidden="true">
-          <div class="card-eyebrow"><span>01 / LLM SYSTEMS</span><span class="work-state"><i></i> IN PROGRESS</span></div><h2 id="eval-title">EvalForge</h2>
-          <p class="scene-description">An LLM evaluation and observability toolkit: it traces every model call, runs experiments, scores outputs, and compares RAG pipelines side by side.</p>
-          <ol class="scene-flow" aria-label="How it works"><li>Trace</li><li>Evaluate</li><li>Compare</li></ol>
-          <div class="scene-tags"><span>PYTHON</span><span>LLM OBSERVABILITY</span><span>RAG EVALUATION</span></div>
-          <a class="scene-action" href="https://github.com/frozenxnx/EvalForge" target="_blank" rel="noreferrer">OPEN PROJECT <span>↗</span></a>
-        </section>
-        <section class="scene-card project-card" data-scene="2" aria-labelledby="voice-title" aria-hidden="true">
-          <div class="card-eyebrow"><span>02 / HUMAN INTERACTION</span><span>VOICE → MOVEMENT</span></div><h2 id="voice-title">Voice Cursor</h2>
-          <p class="scene-description">Move and click through your computer by speaking instead of pointing: a voice-first take on cursor control, built with accessibility in mind.</p>
-          <ol class="scene-flow" aria-label="How it works"><li>Listen</li><li>Interpret</li><li>Navigate</li></ol>
-          <div class="scene-tags"><span>PYTHON</span><span>VOICE INTERFACE</span><span>ACCESSIBILITY</span></div>
-          <a class="scene-action" href="https://github.com/frozenxnx/Voice-Control-Cursor-Navigation-system" target="_blank" rel="noreferrer">OPEN PROJECT <span>↗</span></a>
-        </section>
-        <section class="scene-card project-card" data-scene="3" aria-labelledby="agents-title" aria-hidden="true">
-          <div class="card-eyebrow"><span>03 / AGENT EXPERIMENTS</span><span>PLAN · RETRIEVE · ACT</span></div><h2 id="agents-title">AI Agents</h2>
-          <p class="scene-description">Small agents for real tasks: finance workflows and a Gemma-powered recipe assistant that retrieves before it answers.</p>
-          <ol class="scene-flow" aria-label="How it works"><li>Plan</li><li>Retrieve</li><li>Act</li></ol>
-          <div class="scene-tags"><span>AGENTS</span><span>GEMMA</span><span>RAG</span></div>
-          <a class="scene-action" href="https://github.com/frozenxnx/AI-Agents" target="_blank" rel="noreferrer">OPEN PROJECT <span>↗</span></a>
-        </section>
-        <section class="scene-card about-card" data-scene="4" aria-labelledby="about-title" aria-hidden="true">
-          <div class="card-eyebrow"><span>04 / ORIGIN</span><span>EARTH, FOR NOW</span></div><h2 id="about-title">Curious<br>by nature.</h2>
-          <p class="scene-description">I’m Aaditya, a software engineer who likes starting with a question and shipping the smallest version that answers it. Right now that means LLM evaluation, agents, and backend systems.</p>
-          <div class="scene-tags scene-skills" aria-label="Skills"><span>PYTHON</span><span>JAVA</span><span>GO</span><span>MACHINE LEARNING</span><span>LLMS</span><span>DOCKER</span></div>
-          <a class="scene-action" href="https://github.com/frozenxnx" target="_blank" rel="noreferrer">MORE FIELD NOTES <span>↗</span></a>
-        </section>
-        <section class="scene-card passion-card" data-scene="5" aria-labelledby="passion-title" aria-hidden="true">
-          <div class="card-eyebrow"><span>05 / PERSONAL TRANSMISSION</span><span>THE SKY</span></div><h2 id="passion-title">I love<br>what <em>lifts off.</em></h2>
-          <p class="scene-description">Space exploration makes me feel small in the best way. Rockets turn that distant wonder into human ingenuity, fire, and a journey outward.</p>
-          <button class="scene-action launch-action" id="launch-button" type="button">START A COUNTDOWN <span>↗</span></button><p class="launch-status" id="launch-status" aria-live="polite"></p>
-        </section>
-        <section class="scene-card contact-card" data-scene="6" aria-labelledby="contact-title" aria-hidden="true">
-          <div class="card-eyebrow"><span>06 / OPEN CHANNEL</span><span>EARTH TO EARTH</span></div><h2 id="contact-title">Let’s talk<br>about <em>what’s next.</em></h2>
-          <p class="scene-description">AI, space, software, or an idea still looking for its orbit.</p>
-          <div class="contact-actions">
-            <a class="scene-action" href="https://mail.google.com/mail/?view=cm&amp;fs=1&amp;to=adityasrivastava9567%40gmail.com" target="_blank" rel="noreferrer">SEND A SIGNAL VIA GMAIL <span>↗</span></a>
-            <button class="scene-action copy-action" id="copy-email" type="button" data-email="adityasrivastava9567@gmail.com">COPY EMAIL <span>⧉</span></button>
-            <a class="scene-action" href="https://github.com/frozenxnx" target="_blank" rel="noreferrer">FIND ME ON GITHUB <span>↗</span></a>
-          </div>
-          <p class="launch-status" id="copy-status" aria-live="polite"></p>
-        </section>
-        <div class="orbit-label orbit-label-a" aria-hidden="true"><span>THE WORK</span><i></i></div><div class="orbit-label orbit-label-b" aria-hidden="true"><span>HUMAN / MACHINE</span><i></i></div><div class="orbit-label orbit-label-c" aria-hidden="true"><span>LOOK UP</span><i></i></div>
-        <div class="countdown" id="countdown" aria-hidden="true"></div>
-        <div class="center-object" aria-hidden="true"><div class="center-dust"></div><div class="center-core"></div><div class="center-orbit"></div><div class="center-moon"></div></div>
-        <div class="chart-footer"><span>↑ SCROLL UP · THE CHART</span><span class="chart-progress"><i id="progress"></i></span><span>SCROLL DOWN · FURTHER OUT ↓</span></div>
+
+  <main id="top">
+    <section class="hero" aria-labelledby="name">
+      <p class="hero-intro">Field notes from Earth</p>
+      <h1 id="name"><span class="line"><span>Aaditya</span></span><span class="line"><span>Srivastava</span></span></h1>
+      <p class="hero-lead">I build and evaluate LLM systems, experiment with new ways to control software, and look up at rockets whenever I can.</p>
+      <div class="hero-actions">
+        <a class="btn btn-solid" href="#work">See the work</a>
+        <a class="btn" href="#contact">Get in touch</a>
       </div>
-      <div class="chapter-track" aria-hidden="true">
-        <div class="chapter-stop" id="chapter-0" data-index="0"></div><div class="chapter-stop" id="evalforge" data-index="1"></div><div class="chapter-stop" id="voice-cursor" data-index="2"></div><div class="chapter-stop" id="ai-agents" data-index="3"></div><div class="chapter-stop" id="about" data-index="4"></div><div class="chapter-stop" id="passion" data-index="5"></div><div class="chapter-stop" id="contact" data-index="6"></div>
+      <p class="hero-hint" aria-hidden="true"><span class="drag-icon"></span>Drag anywhere here to spin the galaxy</p>
+    </section>
+
+    <section id="work" class="section" aria-labelledby="work-title">
+      <header class="section-head">
+        <h2 id="work-title">Work</h2>
+        <p>Three systems I keep returning to.</p>
+      </header>
+
+      <article class="project glass">
+        <svg class="orbit-art" viewBox="0 0 240 240" role="img" aria-label="Diagram: trace, evaluate and compare orbiting a model">
+          <defs><radialGradient id="g-core" cx="40%" cy="35%"><stop offset="0" stop-color="#fff3dc"/><stop offset=".55" stop-color="#ffcf8a"/><stop offset="1" stop-color="#b9783d"/></radialGradient></defs>
+          <circle class="ring" cx="120" cy="120" r="44"/><circle class="ring" cx="120" cy="120" r="72"/><circle class="ring" cx="120" cy="120" r="100"/>
+          <circle cx="120" cy="120" r="20" fill="url(#g-core)" class="core-glow"/>
+          <g class="spin" style="--d:16s"><g class="spin rev" style="--d:16s;transform-origin:164px 120px"><circle class="moon" cx="164" cy="120" r="5"/><text x="164" y="104">trace</text></g></g>
+          <g class="spin" style="--d:26s;--start:120deg"><g class="spin rev" style="--d:26s;--start:-120deg;transform-origin:192px 120px"><circle class="moon violet" cx="192" cy="120" r="6"/><text x="192" y="102">evaluate</text></g></g>
+          <g class="spin" style="--d:40s;--start:240deg"><g class="spin rev" style="--d:40s;--start:-240deg;transform-origin:220px 120px"><circle class="moon cyan" cx="220" cy="120" r="7"/><text x="220" y="101">compare</text></g></g>
+        </svg>
+        <div class="project-body">
+          <p class="status"><span class="dot"></span>In progress</p>
+          <h3>EvalForge</h3>
+          <p>An LLM evaluation and observability toolkit. It traces every model call, runs experiments, scores outputs, and compares RAG pipelines side by side.</p>
+          <ul class="tags"><li>Python</li><li>LLM observability</li><li>RAG evaluation</li></ul>
+          <a class="link" href="https://github.com/frozenxnx/EvalForge" target="_blank" rel="noreferrer">View on GitHub ↗</a>
+        </div>
+      </article>
+
+      <article class="project glass flip">
+        <svg class="orbit-art" viewBox="0 0 240 240" role="img" aria-label="Diagram: sound waves radiating from a voice, with a cursor orbiting">
+          <circle class="wave" cx="120" cy="120" r="30" style="--delay:0s"/><circle class="wave" cx="120" cy="120" r="30" style="--delay:1s"/><circle class="wave" cx="120" cy="120" r="30" style="--delay:2s"/>
+          <circle class="ring" cx="120" cy="120" r="86"/>
+          <circle cx="120" cy="120" r="16" class="voice-core"/>
+          <g class="bars"><rect x="111" y="113" width="3" height="14" rx="1.5"/><rect x="118.5" y="108" width="3" height="24" rx="1.5"/><rect x="126" y="113" width="3" height="14" rx="1.5"/></g>
+          <g class="spin" style="--d:12s"><path class="cursor" d="M206 112 l0 20 l5 -5 l4 9 l4 -2 l-4 -9 l7 0 z"/></g>
+        </svg>
+        <div class="project-body">
+          <p class="status">Experiment</p>
+          <h3>Voice Cursor</h3>
+          <p>Move and click through your computer by speaking instead of pointing: a voice-first take on cursor control, built with accessibility in mind.</p>
+          <ul class="tags"><li>Python</li><li>Voice interface</li><li>Accessibility</li></ul>
+          <a class="link" href="https://github.com/frozenxnx/Voice-Control-Cursor-Navigation-system" target="_blank" rel="noreferrer">View on GitHub ↗</a>
+        </div>
+      </article>
+
+      <article class="project glass">
+        <svg class="orbit-art" viewBox="0 0 240 240" role="img" aria-label="Diagram: an agent cycling through plan, retrieve and act">
+          <defs><radialGradient id="g-agent" cx="40%" cy="35%"><stop offset="0" stop-color="#e6e2ff"/><stop offset=".6" stop-color="#9d8cff"/><stop offset="1" stop-color="#4b3fa8"/></radialGradient></defs>
+          <ellipse id="agent-path" class="ring" cx="120" cy="120" rx="96" ry="58" transform="rotate(-18 120 120)"/>
+          <circle cx="120" cy="120" r="22" fill="url(#g-agent)" class="core-glow violet-glow"/>
+          <g class="step" style="--i:0"><circle cx="40" cy="146" r="7"/><text x="40" y="172">plan</text></g>
+          <g class="step" style="--i:1"><circle cx="138" cy="60" r="7"/><text x="138" y="44">retrieve</text></g>
+          <g class="step" style="--i:2"><circle cx="203" cy="125" r="7"/><text x="203" y="153">act</text></g>
+          <circle r="4" class="probe"><animateMotion dur="6s" repeatCount="indefinite" rotate="auto"><mpath href="#agent-path"/></animateMotion></circle>
+        </svg>
+        <div class="project-body">
+          <p class="status">Experiments</p>
+          <h3>AI Agents</h3>
+          <p>Small agents for real tasks: finance workflows and a Gemma-powered recipe assistant that retrieves before it answers.</p>
+          <ul class="tags"><li>Agents</li><li>RAG</li><li>Gemma</li></ul>
+          <a class="link" href="https://github.com/frozenxnx/AI-Agents" target="_blank" rel="noreferrer">View on GitHub ↗</a>
+        </div>
+      </article>
+    </section>
+
+    <section id="about" class="section about" aria-labelledby="about-title">
+      <div class="about-text">
+        <h2 id="about-title">About</h2>
+        <p class="big">I’m Aaditya, a software engineer who likes starting with a question and shipping the smallest version that answers it.</p>
+        <p>Right now that means LLM evaluation, agents and backend systems. When I’m not building, I’m usually reading about the next launch.</p>
+        <a class="link" href="https://github.com/frozenxnx" target="_blank" rel="noreferrer">More on GitHub ↗</a>
       </div>
-    </div>
+      <figure class="constellation glass">
+        <svg viewBox="0 0 420 320" role="img" aria-label="Skills: Python, Machine learning, LLMs, Docker, Go, Java">
+          <g class="links">
+            <line x1="70" y1="96" x2="178" y2="56"/><line x1="178" y1="56" x2="300" y2="104"/><line x1="300" y1="104" x2="352" y2="226"/>
+            <line x1="352" y1="226" x2="222" y2="252"/><line x1="222" y1="252" x2="96" y2="232"/><line x1="96" y1="232" x2="70" y2="96"/><line x1="178" y1="56" x2="222" y2="252"/>
+          </g>
+          <g class="star" style="--t:0s"><circle class="halo" cx="70" cy="96" r="16"/><circle cx="70" cy="96" r="4.5"/><text x="70" y="76">Python</text></g>
+          <g class="star" style="--t:.7s"><circle class="halo" cx="178" cy="56" r="16"/><circle cx="178" cy="56" r="4"/><text x="178" y="36">Machine learning</text></g>
+          <g class="star" style="--t:1.4s"><circle class="halo" cx="300" cy="104" r="16"/><circle cx="300" cy="104" r="5"/><text x="300" y="84">LLMs</text></g>
+          <g class="star" style="--t:2.1s"><circle class="halo" cx="352" cy="226" r="16"/><circle cx="352" cy="226" r="4"/><text x="352" y="258">Docker</text></g>
+          <g class="star" style="--t:2.8s"><circle class="halo" cx="222" cy="252" r="16"/><circle cx="222" cy="252" r="4.5"/><text x="222" y="284">Go</text></g>
+          <g class="star" style="--t:3.5s"><circle class="halo" cx="96" cy="232" r="16"/><circle cx="96" cy="232" r="4"/><text x="96" y="264">Java</text></g>
+        </svg>
+        <figcaption>The stack I navigate by</figcaption>
+      </figure>
+    </section>
+
+    <section id="launch" class="section launch" aria-labelledby="launch-title">
+      <div class="launch-text">
+        <h2 id="launch-title">I love what lifts off.</h2>
+        <p>Space exploration makes me feel small in the best way. Rockets turn that distant wonder into fire, engineering and a journey outward.</p>
+        <button class="btn btn-solid" id="launch-btn" type="button">Start the countdown</button>
+        <p class="launch-status" id="launch-status" aria-live="polite"></p>
+      </div>
+      <div class="stage" id="stage" aria-hidden="true">
+        <div class="count" id="count"></div>
+        <div class="rocket">
+          <svg viewBox="0 0 120 260">
+            <defs>
+              <linearGradient id="g-body" x1="0" x2="1"><stop offset="0" stop-color="#8d93ad"/><stop offset=".45" stop-color="#f4f5fb"/><stop offset="1" stop-color="#7c8199"/></linearGradient>
+              <linearGradient id="g-flame" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff6d8"/><stop offset=".35" stop-color="#ffcf8a"/><stop offset=".75" stop-color="#ff7a59" stop-opacity=".7"/><stop offset="1" stop-color="#9d8cff" stop-opacity="0"/></linearGradient>
+            </defs>
+            <path class="flame" d="M46 196 Q60 290 74 196 Z" fill="url(#g-flame)"/>
+            <path d="M36 170 L14 204 L36 196 Z" fill="#9d8cff"/><path d="M84 170 L106 204 L84 196 Z" fill="#9d8cff"/>
+            <path d="M60 8 C86 40 88 120 84 196 L36 196 C32 120 34 40 60 8 Z" fill="url(#g-body)"/>
+            <circle cx="60" cy="86" r="12" fill="#0b0d18" stroke="#ffcf8a" stroke-width="3"/>
+            <path d="M56 196 L64 196 L64 210 L56 210 Z" fill="#5d6380"/>
+          </svg>
+        </div>
+        <div class="smoke"><i style="--x:-60px;--s:1.1"></i><i style="--x:-25px;--s:1.5"></i><i style="--x:10px;--s:1.3"></i><i style="--x:45px;--s:1.6"></i><i style="--x:-90px;--s:.9"></i><i style="--x:80px;--s:1"></i></div>
+        <div class="pad"></div>
+      </div>
+    </section>
+
+    <section id="contact" class="section contact" aria-labelledby="contact-title">
+      <h2 id="contact-title">Let’s talk about what’s next.</h2>
+      <p>AI, space, software, or an idea still looking for its orbit.</p>
+      <a class="email" href="mailto:adityasrivastava9567@gmail.com">adityasrivastava9567@gmail.com</a>
+      <div class="contact-actions">
+        <button class="btn" id="copy-email" type="button">Copy email</button>
+        <a class="btn" href="https://github.com/frozenxnx" target="_blank" rel="noreferrer">GitHub ↗</a>
+      </div>
+      <p class="launch-status" id="copy-status" aria-live="polite"></p>
+    </section>
+
+    <blockquote class="quote">“Every defeat is psychological until death.”</blockquote>
   </main>
-  <footer class="site-note"><span>AADITYA SRIVASTAVA</span><span>BUILT WITH CURIOSITY ON EARTH · <span id="year"></span></span><a href="https://github.com/frozenxnx" target="_blank" rel="noreferrer">GITHUB ↗</a></footer>
+
+  <footer class="foot"><span>Aaditya Srivastava · <span id="year">2026</span></span><span>Built on Earth, aimed a little higher.</span></footer>
   <script src="script.js"></script>
 </body>
 </html>

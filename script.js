@@ -1,240 +1,230 @@
-const scenes = Array.from(document.querySelectorAll('.scene-card'));
-const navNodes = Array.from(document.querySelectorAll('[data-scene-link]'));
-const chapterStops = Array.from(document.querySelectorAll('.chapter-stop'));
-const progressBar = document.querySelector('#progress');
-const chapterLabel = document.querySelector('#chart-chapter');
-const coordinates = document.querySelector('#chart-coordinate');
-let activeScene = 0;
-const chapterNames = ['INTRODUCTION', 'LLM SYSTEMS', 'HUMAN INTERACTION', 'AGENT EXPERIMENTS', 'ORIGIN', 'THE SKY', 'OPEN CHANNEL'];
-const coordinatesByScene = ['ORIGIN / EARTH', 'MODEL / 01 · EVALUATION', 'SIGNAL / 02 · INTERACTION', 'SYSTEM / 03 · AGENTS', 'ORIGIN / 04 · EARTH', 'VECTOR / 05 · OUTWARD', 'CHANNEL / 06 · OPEN'];
+(() => {
+  'use strict';
+  const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const $ = (s) => document.querySelector(s);
 
-function showScene(index) {
-  const next = Math.max(0, Math.min(scenes.length - 1, index));
-  if (next === activeScene && document.body.dataset.scene) return;
-  activeScene = next;
-  document.body.dataset.scene = String(next);
-  scenes.forEach((card, i) => {
-    const selected = i === next;
-    card.classList.toggle('is-active', selected);
-    card.setAttribute('aria-hidden', String(!selected));
-    card.inert = !selected;
-  });
-  navNodes.forEach((node) => {
-    const selected = Number(node.dataset.sceneLink) === next;
-    node.classList.toggle('is-active', selected);
-    if (selected) node.setAttribute('aria-current', 'step');
-    else node.removeAttribute('aria-current');
-  });
-  if (chapterLabel) chapterLabel.textContent = String(next).padStart(2, '0') + ' / ' + chapterNames[next];
-  if (coordinates) coordinates.textContent = coordinatesByScene[next];
-  if (progressBar) progressBar.style.width = ((next / (scenes.length - 1)) * 100) + '%';
-  document.dispatchEvent(new CustomEvent('orbit:scene', { detail: { index: next } }));
-}
+  /* ---------- Clock (IST) and year ---------- */
+  const clock = $('#clock');
+  const fmt = new Intl.DateTimeFormat('en-GB', { timeZone: 'Asia/Kolkata', hour: '2-digit', minute: '2-digit', hour12: false });
+  const tickClock = () => { if (clock) clock.textContent = fmt.format(new Date()) + ' IST'; };
+  tickClock(); setInterval(tickClock, 20000);
+  const year = $('#year'); if (year) year.textContent = new Date().getFullYear();
 
-showScene(0);
-const sceneObserver = new IntersectionObserver((entries) => {
-  const visible = entries.filter((entry) => entry.isIntersecting).sort((a, b) => b.intersectionRatio - a.intersectionRatio)[0];
-  if (visible) showScene(Number(visible.target.dataset.index));
-}, { threshold: [0.35, 0.55, 0.72] });
-chapterStops.forEach((stop) => sceneObserver.observe(stop));
+  /* ---------- Active nav link ---------- */
+  const navLinks = Array.from(document.querySelectorAll('.nav nav a'));
+  const sectionObserver = new IntersectionObserver((entries) => {
+    entries.forEach((e) => {
+      if (!e.isIntersecting) return;
+      navLinks.forEach((a) => a.classList.toggle('active', a.getAttribute('href') === '#' + e.target.id));
+    });
+  }, { rootMargin: '-45% 0px -50% 0px' });
+  ['work', 'about', 'launch', 'contact'].forEach((id) => { const el = document.getElementById(id); if (el) sectionObserver.observe(el); });
 
-const clock = document.querySelector('#clock');
-function updateClock() {
-  if (!clock) return;
-  clock.textContent = new Intl.DateTimeFormat('en-GB', { timeZone: 'Asia/Kolkata', hour: '2-digit', minute: '2-digit', hour12: false }).format(new Date()) + ' IST';
-}
-updateClock();
-setInterval(updateClock, 30000);
-const year = document.querySelector('#year');
-if (year) year.textContent = new Date().getFullYear();
+  /* ---------- Galaxy (raw WebGL, no libraries) ---------- */
+  const canvas = $('#galaxy');
+  const gl = canvas && (canvas.getContext('webgl', { antialias: false, alpha: false, powerPreference: 'high-performance' }) || canvas.getContext('experimental-webgl'));
+  const galaxy = { warp: 0 };
 
-// Keyboard: ↑/↓ (or j/k) jump between stops, Home/End to first/last.
-function goToScene(index) {
-  const stop = chapterStops[Math.max(0, Math.min(chapterStops.length - 1, index))];
-  if (stop) stop.scrollIntoView({ behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' });
-}
-window.addEventListener('keydown', (event) => {
-  if (event.metaKey || event.ctrlKey || event.altKey) return;
-  const tag = (event.target && event.target.tagName) || '';
-  if (tag === 'INPUT' || tag === 'TEXTAREA') return;
-  const key = event.key;
-  if (key === 'ArrowDown' || key === 'j' || key === 'PageDown') { event.preventDefault(); goToScene(activeScene + 1); }
-  else if (key === 'ArrowUp' || key === 'k' || key === 'PageUp') { event.preventDefault(); goToScene(activeScene - 1); }
-  else if (key === 'Home') { event.preventDefault(); goToScene(0); }
-  else if (key === 'End') { event.preventDefault(); goToScene(scenes.length - 1); }
-});
+  if (!gl) {
+    document.documentElement.classList.add('no-webgl');
+  } else {
+    const small = Math.min(window.innerWidth, window.innerHeight) < 700;
+    const ARM_STARS = small ? 26000 : 64000;
+    const FIELD_STARS = small ? 1800 : 3500;
+    const RADIUS = 5.2, BRANCHES = 3, SPIN = 1.15;
+    const inner = [1.0, 0.82, 0.55], outer = [0.36, 0.42, 1.0], rose = [1.0, 0.5, 0.7], cyan = [0.45, 0.85, 1.0];
+    const STRIDE = 9; // radius, angle, ox, oy, oz, r, g, b, size
+    const data = new Float32Array((ARM_STARS + FIELD_STARS) * STRIDE);
+    const mix = (a, b, t) => a + (b - a) * t;
+    const spread = (scale) => Math.pow(Math.random(), 3) * (Math.random() < 0.5 ? 1 : -1) * scale;
 
-// Countdown: a real T-3, 2, 1, then liftoff.
-const launchButton = document.querySelector('#launch-button');
-const launchStatus = document.querySelector('#launch-status');
-const countdownEl = document.querySelector('#countdown');
-let countdownTimers = [];
-function clearCountdown() { countdownTimers.forEach(clearTimeout); countdownTimers = []; }
-function resetLaunch() {
-  clearCountdown();
-  document.body.classList.remove('launching', 'launched');
-  countdownEl?.classList.remove('show');
-  if (launchButton) { launchButton.disabled = false; launchButton.innerHTML = 'START A COUNTDOWN <span>↗</span>'; }
-  if (launchStatus) launchStatus.textContent = '';
-}
-launchButton?.addEventListener('click', () => {
-  if (document.body.classList.contains('launched')) { resetLaunch(); return; }
-  clearCountdown();
-  document.body.classList.add('launching');
-  launchButton.disabled = true;
-  if (launchStatus) launchStatus.textContent = 'SYSTEMS NOMINAL · HOLDING THE DREAM';
-  [3, 2, 1].forEach((n, i) => {
-    countdownTimers.push(setTimeout(() => {
-      launchButton.innerHTML = 'T − 0' + n + ' <span>·</span>';
-      if (countdownEl) { countdownEl.textContent = n; countdownEl.classList.add('show'); }
-    }, i * 800));
-  });
-  countdownTimers.push(setTimeout(() => {
-    countdownEl?.classList.remove('show');
-    document.body.classList.add('launched');
-    launchButton.disabled = false;
-    launchButton.innerHTML = 'RESET THE PAD <span>↺</span>';
-    if (launchStatus) launchStatus.textContent = 'LIFTOFF · ORBIT ACHIEVED · KEEP LOOKING UP';
-  }, 2400));
-});
-// Leaving the rocket scene puts it back on the pad.
-document.addEventListener('orbit:scene', (event) => { if (event.detail.index !== 5) resetLaunch(); });
-
-// Copy email
-const copyButton = document.querySelector('#copy-email');
-const copyStatus = document.querySelector('#copy-status');
-copyButton?.addEventListener('click', async () => {
-  const email = copyButton.dataset.email;
-  try { await navigator.clipboard.writeText(email); if (copyStatus) copyStatus.textContent = 'EMAIL COPIED · ' + email.toUpperCase(); }
-  catch (_) { if (copyStatus) copyStatus.textContent = email; }
-  setTimeout(() => { if (copyStatus) copyStatus.textContent = ''; }, 2600);
-});
-
-const canvas = document.querySelector('#cosmos');
-const context = canvas?.getContext('2d', { alpha: false });
-const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-let particles = [];
-let pointer = { x: 0, y: 0 };
-let sceneForCanvas = 0;
-let width = 0;
-let height = 0;
-let pixelRatio = 1;
-
-function seedParticles() {
-  // Fewer stars on small/low-power screens; still dense on desktop.
-  const amount = Math.min(4200, Math.max(1400, Math.floor(window.innerWidth * window.innerHeight / 210)));
-  particles = Array.from({ length: amount }, () => {
-    const radius = Math.pow(Math.random(), .72);
-    const angle = Math.random() * Math.PI * 2;
-    return { radius, angle, scatter: (Math.random() - .5) * .22, size: Math.random() * 1.15 + .2, shine: Math.random(), phase: Math.random() * Math.PI * 2 };
-  });
-}
-
-function resizeCanvas() {
-  if (!canvas || !context) return;
-  pixelRatio = Math.min(window.devicePixelRatio || 1, 1.6);
-  width = window.innerWidth;
-  height = window.innerHeight;
-  canvas.width = Math.round(width * pixelRatio);
-  canvas.height = Math.round(height * pixelRatio);
-  context.setTransform(pixelRatio, 0, 0, pixelRatio, 0, 0);
-  seedParticles();
-  if (reduceMotion) drawChart(0);
-}
-
-function drawChart(time) {
-  if (!context) return;
-  context.fillStyle = '#020303';
-  context.fillRect(0, 0, width, height);
-  const cx = width * (.52 + pointer.x * .008);
-  const cy = height * (.53 + pointer.y * .006);
-  const maxRadius = Math.min(width * .39, height * .43);
-  const angleShift = reduceMotion ? 0 : time * .000035;
-  const planetMode = sceneForCanvas === 4;
-  const rocketMode = sceneForCanvas === 5;
-  const outward = sceneForCanvas === 6;
-  context.save();
-  context.translate(cx, cy);
-  context.rotate(sceneForCanvas === 2 ? .48 : sceneForCanvas === 5 ? -.22 : -.28);
-  context.strokeStyle = '#b8b7ae';
-  context.globalAlpha = .08;
-  for (let ring = 0; ring < 5; ring++) {
-    context.beginPath();
-    context.ellipse(0, 0, maxRadius * (.38 + ring * .16), maxRadius * (.13 + ring * .055), 0, 0, Math.PI * 2);
-    context.stroke();
-  }
-  context.restore();
-  for (const p of particles) {
-    const radial = p.radius * maxRadius;
-    const spiral = p.angle + (p.radius * 5.7) + angleShift + p.scatter;
-    let x;
-    let y;
-    let alpha = .15 + p.shine * .38;
-    if (planetMode) {
-      x = cx + Math.cos(spiral) * radial;
-      y = cy + Math.sin(spiral) * radial * .52;
-    } else if (rocketMode) {
-      const plume = (p.angle % .6 - .3) * radial * .65;
-      x = cx + Math.cos(spiral) * radial * .42 + plume;
-      y = cy + Math.sin(spiral) * radial * .82 - (p.radius * height * .1);
-      alpha *= .9;
-    } else if (outward) {
-      const bloom = radial * (1 + p.radius * .7);
-      x = cx + Math.cos(spiral + angleShift * 2) * bloom;
-      y = cy + Math.sin(spiral + angleShift * 2) * bloom * .58;
-    } else {
-      x = cx + Math.cos(spiral) * radial;
-      y = cy + Math.sin(spiral) * radial * .55;
+    let o = 0;
+    for (let i = 0; i < ARM_STARS; i++) {
+      const r = Math.pow(Math.random(), 1.5) * RADIUS;
+      const branch = ((i % BRANCHES) / BRANCHES) * Math.PI * 2;
+      const s = 0.45 + r * 0.16;
+      const t = r / RADIUS;
+      let c = [mix(inner[0], outer[0], t), mix(inner[1], outer[1], t), mix(inner[2], outer[2], t)];
+      const roll = Math.random();
+      if (t > 0.3 && roll < 0.035) c = rose;
+      else if (t > 0.5 && roll < 0.07) c = cyan;
+      const b = 0.55 + Math.random() * 0.45;
+      data[o++] = r;
+      data[o++] = branch + r * SPIN;
+      data[o++] = spread(s);
+      data[o++] = spread(s * 0.45) * (1.1 - t * 0.7);
+      data[o++] = spread(s);
+      data[o++] = c[0] * b; data[o++] = c[1] * b; data[o++] = c[2] * b;
+      data[o++] = (r < 0.6 ? 0.9 : 1) * (1 + Math.random() * 1.8);
     }
-    if (sceneForCanvas === 1) { x = cx + Math.cos(spiral * .65) * radial * 1.05; y = cy + Math.sin(spiral * .65) * radial * .32; }
-    if (sceneForCanvas === 3) { x = cx + Math.cos(spiral * 1.7) * radial * .62; y = cy + Math.sin(spiral * 1.7) * radial * .72; }
-    const special = (p.shine > .985) || (rocketMode && p.radius > .76 && p.radius < .88 && p.shine > .72);
-    const twinkle = reduceMotion ? 1 : .68 + Math.sin(time * .001 + p.phase) * .32;
-    // Squares via fillRect are far cheaper than thousands of arc() paths; at 1–2px they look identical.
-    if (special) {
-      const s = p.size * 1.7;
-      context.globalAlpha = Math.min(1, alpha * twinkle + .13);
-      context.fillStyle = '#dabe84';
-      context.beginPath(); context.arc(x, y, s, 0, Math.PI * 2); context.fill();
-    } else {
-      const s = p.size * 1.6;
-      context.globalAlpha = alpha * twinkle;
-      context.fillStyle = '#dcdad1';
-      context.fillRect(x - s / 2, y - s / 2, s, s);
+    for (let i = 0; i < FIELD_STARS; i++) {
+      const u = Math.random() * 2 - 1, th = Math.random() * Math.PI * 2, d = 22 + Math.random() * 40;
+      const q = Math.sqrt(1 - u * u);
+      const w = 0.55 + Math.random() * 0.45;
+      data[o++] = 0; data[o++] = 0;
+      data[o++] = q * Math.cos(th) * d; data[o++] = u * d; data[o++] = q * Math.sin(th) * d;
+      data[o++] = 0.85 * w; data[o++] = 0.88 * w; data[o++] = w;
+      data[o++] = 6 + Math.random() * 10;
     }
-  }
-  context.globalAlpha = 1;
-  if (planetMode) {
-    const radius = Math.min(width, height) * .07;
-    const glow = context.createRadialGradient(cx - radius * .3, cy - radius * .35, radius * .05, cx, cy, radius * 1.5);
-    glow.addColorStop(0, '#c8c7be'); glow.addColorStop(.48, '#696b68'); glow.addColorStop(1, '#05060600');
-    context.fillStyle = glow; context.beginPath(); context.arc(cx, cy, radius * 1.5, 0, Math.PI * 2); context.fill();
-    context.strokeStyle = '#d1c29d66'; context.lineWidth = 1; context.beginPath(); context.ellipse(cx, cy, radius * 2.2, radius * .58, -.32, 0, Math.PI * 2); context.stroke();
-  }
-  if (rocketMode) {
-    const tail = Math.min(height * .24, 150);
-    const plume = context.createLinearGradient(cx, cy + 18, cx, cy + tail);
-    plume.addColorStop(0, '#e2c98d99'); plume.addColorStop(1, '#d9bd7a00');
-    context.strokeStyle = plume; context.lineWidth = 3; context.beginPath(); context.moveTo(cx, cy + 19); context.lineTo(cx, cy + tail); context.stroke();
-  }
-}
 
-let lastFrame = 0;
-function animate(time) {
-  // Cap at ~40fps: the drift is slow, so full 60–120fps only burns battery.
-  if (!time || time - lastFrame > 24) { drawChart(time || 0); lastFrame = time || 0; }
-  if (!reduceMotion) requestAnimationFrame(animate);
-}
-if (canvas && context) {
-  resizeCanvas();
-  animate(0);
-  window.addEventListener('resize', resizeCanvas, { passive: true });
-  window.addEventListener('pointermove', (event) => {
-    pointer.x = event.clientX / Math.max(1, width) - .5;
-    pointer.y = event.clientY / Math.max(1, height) - .5;
-  }, { passive: true });
-  document.addEventListener('orbit:scene', (event) => {
-    sceneForCanvas = event.detail.index;
-    if (reduceMotion) drawChart(0);
+    const vs = `
+      attribute float aRadius; attribute float aAngle; attribute vec3 aOffset; attribute vec3 aColor; attribute float aSize;
+      uniform mat4 uProj; uniform mat4 uView; uniform float uTime; uniform float uScale; uniform float uShift; uniform float uBright;
+      varying vec3 vColor;
+      void main(){
+        float a = aAngle - uTime * 0.16 / (aRadius + 0.7);
+        vec3 p = vec3(cos(a) * aRadius, 0.0, sin(a) * aRadius) + aOffset;
+        vec4 mv = uView * vec4(p, 1.0);
+        gl_Position = uProj * mv;
+        gl_Position.x += uShift * gl_Position.w;
+        gl_PointSize = max(1.0, aSize * uScale / -mv.z);
+        vColor = aColor * uBright;
+      }`;
+    const fs = `
+      precision mediump float; varying vec3 vColor;
+      void main(){
+        float d = length(gl_PointCoord - 0.5);
+        if (d > 0.5) discard;
+        float s = pow(1.0 - d * 2.0, 2.4);
+        gl_FragColor = vec4(vColor * s, 1.0);
+      }`;
+    const compile = (type, src) => { const sh = gl.createShader(type); gl.shaderSource(sh, src); gl.compileShader(sh); return sh; };
+    const prog = gl.createProgram();
+    gl.attachShader(prog, compile(gl.VERTEX_SHADER, vs));
+    gl.attachShader(prog, compile(gl.FRAGMENT_SHADER, fs));
+    gl.linkProgram(prog);
+    gl.useProgram(prog);
+
+    const buf = gl.createBuffer();
+    gl.bindBuffer(gl.ARRAY_BUFFER, buf);
+    gl.bufferData(gl.ARRAY_BUFFER, data, gl.STATIC_DRAW);
+    const attr = (name, size, offset) => {
+      const loc = gl.getAttribLocation(prog, name);
+      gl.enableVertexAttribArray(loc);
+      gl.vertexAttribPointer(loc, size, gl.FLOAT, false, STRIDE * 4, offset * 4);
+    };
+    attr('aRadius', 1, 0); attr('aAngle', 1, 1); attr('aOffset', 3, 2); attr('aColor', 3, 5); attr('aSize', 1, 8);
+    const U = (n) => gl.getUniformLocation(prog, n);
+    const uProj = U('uProj'), uView = U('uView'), uTime = U('uTime'), uScale = U('uScale'), uShift = U('uShift'), uBright = U('uBright');
+
+    gl.disable(gl.DEPTH_TEST);
+    gl.enable(gl.BLEND);
+    gl.blendFunc(gl.ONE, gl.ONE);
+    gl.clearColor(0.02, 0.024, 0.043, 1);
+
+    const perspective = (fovy, aspect, near, far) => {
+      const f = 1 / Math.tan(fovy / 2), nf = 1 / (near - far);
+      return new Float32Array([f / aspect, 0, 0, 0, 0, f, 0, 0, 0, 0, (far + near) * nf, -1, 0, 0, 2 * far * near * nf, 0]);
+    };
+    const lookAt = (e, t) => {
+      let zx = e[0] - t[0], zy = e[1] - t[1], zz = e[2] - t[2];
+      let l = Math.hypot(zx, zy, zz); zx /= l; zy /= l; zz /= l;
+      let xx = zz, xy = 0, xz = -zx; // up = (0,1,0) cross z
+      l = Math.hypot(xx, xy, xz) || 1; xx /= l; xy /= l; xz /= l;
+      const yx = zy * xz - zz * xy, yy = zz * xx - zx * xz, yz = zx * xy - zy * xx;
+      return new Float32Array([
+        xx, yx, zx, 0, xy, yy, zy, 0, xz, yz, zz, 0,
+        -(xx * e[0] + xy * e[1] + xz * e[2]), -(yx * e[0] + yy * e[1] + yz * e[2]), -(zx * e[0] + zy * e[1] + zz * e[2]), 1
+      ]);
+    };
+
+    let W = 0, H = 0, wide = true;
+    const resize = () => {
+      const pr = Math.min(window.devicePixelRatio || 1, small ? 1.5 : 2);
+      W = window.innerWidth; H = window.innerHeight; wide = W > 900;
+      canvas.width = Math.round(W * pr); canvas.height = Math.round(H * pr);
+      gl.viewport(0, 0, canvas.width, canvas.height);
+      gl.uniformMatrix4fv(uProj, false, perspective(0.9, W / H, 0.1, 200));
+      gl.uniform1f(uScale, pr * Math.max(7, H / 85));
+    };
+    resize();
+    window.addEventListener('resize', resize, { passive: true });
+
+    // Camera keyframes along the page: [progress, azimuth, elevation, distance, horizontal shift, brightness]
+    const KEYS = [
+      [0.00, 0.55, 0.60, 6.3, 0.34, 1.00],
+      [0.22, 1.45, 0.26, 5.2, 0.00, 0.70],
+      [0.52, 2.35, 0.18, 3.6, 0.00, 0.55],
+      [0.74, 3.10, 0.85, 6.4, -0.28, 0.80],
+      [1.00, 3.90, 1.40, 10.5, 0.00, 0.95],
+    ];
+    const ease = (t) => t * t * (3 - 2 * t);
+    const sample = (p) => {
+      for (let i = 0; i < KEYS.length - 1; i++) {
+        const a = KEYS[i], b = KEYS[i + 1];
+        if (p <= b[0]) { const t = ease((p - a[0]) / (b[0] - a[0])); return a.map((v, k) => v + (b[k] - v) * t); }
+      }
+      return KEYS[KEYS.length - 1].slice();
+    };
+
+    // Drag to spin (hero), gentle pointer parallax everywhere
+    const cam = sample(0);
+    let dragAz = 0, dragVel = 0, dragging = false, lastX = 0, px = 0, py = 0, spx = 0, spy = 0;
+    const hero = $('.hero');
+    hero?.addEventListener('pointerdown', (e) => {
+      if (e.target.closest('a,button')) return;
+      dragging = true; lastX = e.clientX; hero.classList.add('dragging'); hero.setPointerCapture(e.pointerId);
+    });
+    hero?.addEventListener('pointermove', (e) => {
+      if (!dragging) return;
+      const dx = e.clientX - lastX; lastX = e.clientX;
+      dragVel = dx * 0.006; dragAz += dragVel;
+    });
+    const endDrag = () => { dragging = false; hero?.classList.remove('dragging'); };
+    hero?.addEventListener('pointerup', endDrag); hero?.addEventListener('pointercancel', endDrag);
+    window.addEventListener('pointermove', (e) => { px = e.clientX / W - 0.5; py = e.clientY / H - 0.5; }, { passive: true });
+
+    let time = 12, last = performance.now();
+    const frame = (now) => {
+      const dt = Math.min(0.05, (now - last) / 1000); last = now;
+      if (!reduceMotion) time += dt * (1 + galaxy.warp * 9);
+      galaxy.warp *= 0.985;
+      if (!dragging) { dragAz += dragVel; dragVel *= 0.94; }
+
+      const max = Math.max(1, document.documentElement.scrollHeight - H);
+      const target = sample(Math.min(1, Math.max(0, window.scrollY / max)));
+      const k = reduceMotion ? 1 : 0.06;
+      for (let i = 1; i < cam.length; i++) cam[i] += (target[i] - cam[i]) * k;
+      spx += (px - spx) * 0.05; spy += (py - spy) * 0.05;
+
+      const az = cam[1] + dragAz + spx * 0.25, el = cam[2] - spy * 0.12, dist = cam[3] * (1 - galaxy.warp * 0.25);
+      const eye = [Math.cos(el) * Math.cos(az) * dist, Math.sin(el) * dist, Math.cos(el) * Math.sin(az) * dist];
+      gl.uniformMatrix4fv(uView, false, lookAt(eye, [0, 0, 0]));
+      gl.uniform1f(uTime, time);
+      gl.uniform1f(uShift, wide ? cam[4] : cam[4] * 0.25);
+      gl.uniform1f(uBright, cam[5] * (wide ? 0.95 : 0.8));
+      gl.clear(gl.COLOR_BUFFER_BIT);
+      gl.drawArrays(gl.POINTS, 0, ARM_STARS + FIELD_STARS);
+      requestAnimationFrame(frame);
+    };
+    requestAnimationFrame((t) => { last = t; frame(t); document.documentElement.classList.add('ready'); });
+  }
+
+  /* ---------- Rocket launch ---------- */
+  const btn = $('#launch-btn'), stage = $('#stage'), count = $('#count'), status = $('#launch-status');
+  let timers = [];
+  const later = (fn, ms) => timers.push(setTimeout(fn, ms));
+  const show = (text, cls) => { count.textContent = text; count.className = 'count'; void count.offsetWidth; count.classList.add(cls); };
+  const reset = () => {
+    timers.forEach(clearTimeout); timers = [];
+    stage.classList.remove('ignite', 'liftoff'); count.className = 'count'; count.textContent = '';
+    btn.disabled = false; btn.textContent = 'Start the countdown'; status.textContent = '';
+  };
+  btn?.addEventListener('click', () => {
+    if (stage.classList.contains('liftoff')) { reset(); return; }
+    btn.disabled = true; status.textContent = 'Systems nominal. Holding the dream.';
+    const step = reduceMotion ? 250 : 1000;
+    [3, 2, 1].forEach((n, i) => later(() => { show(n, 'tick'); if (n === 1) stage.classList.add('ignite'); }, i * step));
+    later(() => { show('Liftoff', 'word'); stage.classList.add('liftoff'); galaxy.warp = 1; status.textContent = 'Liftoff.'; }, 3 * step);
+    later(() => { btn.disabled = false; btn.textContent = 'Reset the pad'; status.textContent = 'Orbit reached. Keep looking up.'; }, 3 * step + (reduceMotion ? 300 : 2800));
   });
-}
+
+  /* ---------- Copy email ---------- */
+  const copyBtn = $('#copy-email'), copyStatus = $('#copy-status');
+  copyBtn?.addEventListener('click', async () => {
+    const email = 'adityasrivastava9567@gmail.com';
+    try { await navigator.clipboard.writeText(email); copyStatus.textContent = 'Copied. Transmission ready.'; }
+    catch (_) { copyStatus.textContent = email; }
+    setTimeout(() => { copyStatus.textContent = ''; }, 2600);
+  });
+})();
