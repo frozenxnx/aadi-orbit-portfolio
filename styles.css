@@ -7,3 +7,64 @@ body[data-scene="5"] .center-object:after{position:absolute;z-index:-1;top:59%;l
 body.launching[data-scene="5"] .center-object:after{height:72px;opacity:.75}
 body.launching[data-scene="5"] .center-object .center-core{box-shadow:0 0 30px #ffe3a655,0 0 74px #e6bb7c55}
 body.launched[data-scene="5"] .center-object{transform:translate(-50%,-65%)}
+
+/* ---- Readability pass: labels were 6–9px, body 10–12px ---- */
+.masthead{font-size:11px}.masthead-center,.masthead-right{font-size:10px}.masthead-right time{font-size:12px}
+.chart-meta{font-size:10px}
+.nav-node{font-size:10px;letter-spacing:.14em}.nav-node span{font-size:9px}
+.scene-card{width:min(440px,40vw);padding:20px 22px 18px}
+.scene-kicker,.card-eyebrow{font-size:10px;letter-spacing:.1em}
+.scene-description{max-width:380px;font-size:15px;line-height:1.6;color:#c4c2bc}
+.home-card .scene-description{font-size:16px;max-width:400px}
+.scene-action{font-size:11px;padding:6px 0}.scene-action span{font-size:14px}
+.scene-tags span{font-size:10px;padding:5px 9px}
+.launch-status{font-size:10px}
+.orbit-label{font-size:9px}
+.chart-footer{font-size:10px}
+.site-note{font-size:9px}
+.scene-action:focus-visible,.nav-node:focus-visible{outline:1px solid var(--amber);outline-offset:4px}
+
+/* Project flow: the steps each project goes through */
+.scene-flow{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin:4px 0 12px;padding:0;list-style:none;color:#e0dcd0;font:500 11px var(--mono);letter-spacing:.08em}
+.scene-flow li{padding:4px 10px;border:1px solid #d9b87955;border-radius:999px;background:#d9b87910}
+.scene-flow li+li:before{content:'→';margin:0 8px 0 -2px;color:var(--faint);border:0}
+.scene-flow li+li{display:flex;align-items:center}
+.scene-skills{margin-top:4px}.scene-skills span{color:#d4d1c8;border-color:#a8a9a355}
+.scene-hint{margin:18px 0 0;color:#7d7f7b;font:10px var(--mono);letter-spacing:.08em}
+.scene-hint kbd{display:inline-block;min-width:20px;padding:1px 5px;border:1px solid #55595988;border-radius:4px;color:#c4c2bc;font:inherit;text-align:center}
+.contact-actions{display:flex;flex-direction:column;align-items:flex-start;gap:2px}
+.copy-action{padding:6px 0;border:0;background:none;cursor:pointer}
+
+/* Countdown: big numerals beside the rocket */
+.countdown{position:absolute;z-index:8;top:50%;left:69%;transform:translate(-50%,-50%);color:var(--amber);font:500 clamp(70px,12vw,150px)/1 var(--sans);letter-spacing:-.06em;text-shadow:0 0 40px #d9b87955;opacity:0;pointer-events:none;transition:opacity .2s}
+.countdown.show{opacity:.9}
+body.launched[data-scene="5"] .center-object{transform:translate(-50%,-140%);transition:transform 1.6s cubic-bezier(.55,0,.8,.3)}
+body.launched[data-scene="5"] .center-object:after{height:160px;opacity:.9}
+
+@media(max-width:700px){
+  .masthead{font-size:9px}.masthead-center{font-size:8px}.masthead-right{font-size:8px}.masthead-right time{font-size:10px}
+  .chart-meta{font-size:8px}
+  .nav-node{font-size:8px;letter-spacing:.08em}.nav-node span{font-size:8px}
+  .scene-card{width:min(86vw,360px);padding:14px 14px 12px}
+  .scene-kicker,.card-eyebrow{font-size:8px}
+  .scene-description,.home-card .scene-description{font-size:13px;line-height:1.55}
+  .scene-action{font-size:10px}
+  .scene-tags span{font-size:8px}
+  .scene-flow{font-size:9px}
+  .scene-hint{display:none}
+  .orbit-label{font-size:7px}
+  .chart-footer{font-size:8px}
+  .site-note{font-size:8px}
+  .countdown{left:76%;top:40%}
+}
+@media(prefers-reduced-motion:reduce){body.launched[data-scene="5"] .center-object{transform:translate(-50%,-65%)}}
+
+/* Layout fixes after the type bump */
+.chart-footer{bottom:calc(var(--frame) + 34px)}
+.countdown{left:55%}
+@media(max-width:700px){
+  .masthead-center span:last-child,.masthead-right>span:nth-child(2){display:none}
+  .scene-card:not(.home-card){background:#030405e8;-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px)}
+  .chart-footer{bottom:calc(var(--frame) + 30px)}
+  .countdown{left:50%;top:30%}
+}

@@ -48,29 +48,66 @@ setInterval(updateClock, 30000);
 const year = document.querySelector('#year');
 if (year) year.textContent = new Date().getFullYear();
 
+// Keyboard: ↑/↓ (or j/k) jump between stops, Home/End to first/last.
+function goToScene(index) {
+  const stop = chapterStops[Math.max(0, Math.min(chapterStops.length - 1, index))];
+  if (stop) stop.scrollIntoView({ behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' });
+}
+window.addEventListener('keydown', (event) => {
+  if (event.metaKey || event.ctrlKey || event.altKey) return;
+  const tag = (event.target && event.target.tagName) || '';
+  if (tag === 'INPUT' || tag === 'TEXTAREA') return;
+  const key = event.key;
+  if (key === 'ArrowDown' || key === 'j' || key === 'PageDown') { event.preventDefault(); goToScene(activeScene + 1); }
+  else if (key === 'ArrowUp' || key === 'k' || key === 'PageUp') { event.preventDefault(); goToScene(activeScene - 1); }
+  else if (key === 'Home') { event.preventDefault(); goToScene(0); }
+  else if (key === 'End') { event.preventDefault(); goToScene(scenes.length - 1); }
+});
+
+// Countdown: a real T-3, 2, 1, then liftoff.
 const launchButton = document.querySelector('#launch-button');
 const launchStatus = document.querySelector('#launch-status');
-let countdownTimer;
+const countdownEl = document.querySelector('#countdown');
+let countdownTimers = [];
+function clearCountdown() { countdownTimers.forEach(clearTimeout); countdownTimers = []; }
+function resetLaunch() {
+  clearCountdown();
+  document.body.classList.remove('launching', 'launched');
+  countdownEl?.classList.remove('show');
+  if (launchButton) { launchButton.disabled = false; launchButton.innerHTML = 'START A COUNTDOWN <span>↗</span>'; }
+  if (launchStatus) launchStatus.textContent = '';
+}
 launchButton?.addEventListener('click', () => {
-  if (document.body.classList.contains('launched')) {
-    clearTimeout(countdownTimer);
-    document.body.classList.remove('launching', 'launched');
-    launchButton.disabled = false;
-    launchButton.innerHTML = 'START A COUNTDOWN <span>↗</span>';
-    if (launchStatus) launchStatus.textContent = '';
-    return;
-  }
-  clearTimeout(countdownTimer);
+  if (document.body.classList.contains('launched')) { resetLaunch(); return; }
+  clearCountdown();
   document.body.classList.add('launching');
   launchButton.disabled = true;
-  launchButton.innerHTML = 'T − 03 <span>·</span>';
   if (launchStatus) launchStatus.textContent = 'SYSTEMS NOMINAL · HOLDING THE DREAM';
-  countdownTimer = setTimeout(() => {
+  [3, 2, 1].forEach((n, i) => {
+    countdownTimers.push(setTimeout(() => {
+      launchButton.innerHTML = 'T − 0' + n + ' <span>·</span>';
+      if (countdownEl) { countdownEl.textContent = n; countdownEl.classList.add('show'); }
+    }, i * 800));
+  });
+  countdownTimers.push(setTimeout(() => {
+    countdownEl?.classList.remove('show');
     document.body.classList.add('launched');
     launchButton.disabled = false;
-    launchButton.innerHTML = 'LIFTOFF · AGAIN? <span>↗</span>';
-    if (launchStatus) launchStatus.textContent = 'ORBIT ACHIEVED · KEEP LOOKING UP';
-  }, 1100);
+    launchButton.innerHTML = 'RESET THE PAD <span>↺</span>';
+    if (launchStatus) launchStatus.textContent = 'LIFTOFF · ORBIT ACHIEVED · KEEP LOOKING UP';
+  }, 2400));
+});
+// Leaving the rocket scene puts it back on the pad.
+document.addEventListener('orbit:scene', (event) => { if (event.detail.index !== 5) resetLaunch(); });
+
+// Copy email
+const copyButton = document.querySelector('#copy-email');
+const copyStatus = document.querySelector('#copy-status');
+copyButton?.addEventListener('click', async () => {
+  const email = copyButton.dataset.email;
+  try { await navigator.clipboard.writeText(email); if (copyStatus) copyStatus.textContent = 'EMAIL COPIED · ' + email.toUpperCase(); }
+  catch (_) { if (copyStatus) copyStatus.textContent = email; }
+  setTimeout(() => { if (copyStatus) copyStatus.textContent = ''; }, 2600);
 });
 
 const canvas = document.querySelector('#cosmos');
@@ -84,7 +121,8 @@ let height = 0;
 let pixelRatio = 1;
 
 function seedParticles() {
-  const amount = Math.min(5600, Math.max(2400, Math.floor(window.innerWidth * window.innerHeight / 145)));
+  // Fewer stars on small/low-power screens; still dense on desktop.
+  const amount = Math.min(4200, Math.max(1400, Math.floor(window.innerWidth * window.innerHeight / 210)));
   particles = Array.from({ length: amount }, () => {
     const radius = Math.pow(Math.random(), .72);
     const angle = Math.random() * Math.PI * 2;
@@ -152,11 +190,20 @@ function drawChart(time) {
     if (sceneForCanvas === 3) { x = cx + Math.cos(spiral * 1.7) * radial * .62; y = cy + Math.sin(spiral * 1.7) * radial * .72; }
     const special = (p.shine > .985) || (rocketMode && p.radius > .76 && p.radius < .88 && p.shine > .72);
     const twinkle = reduceMotion ? 1 : .68 + Math.sin(time * .001 + p.phase) * .32;
-    context.beginPath();
-    context.fillStyle = special ? 'rgba(218,190,132,' + (alpha * twinkle + .13) + ')' : 'rgba(220,218,209,' + alpha * twinkle + ')';
-    context.arc(x, y, p.size * (special ? 1.7 : 1), 0, Math.PI * 2);
-    context.fill();
+    // Squares via fillRect are far cheaper than thousands of arc() paths; at 1–2px they look identical.
+    if (special) {
+      const s = p.size * 1.7;
+      context.globalAlpha = Math.min(1, alpha * twinkle + .13);
+      context.fillStyle = '#dabe84';
+      context.beginPath(); context.arc(x, y, s, 0, Math.PI * 2); context.fill();
+    } else {
+      const s = p.size * 1.6;
+      context.globalAlpha = alpha * twinkle;
+      context.fillStyle = '#dcdad1';
+      context.fillRect(x - s / 2, y - s / 2, s, s);
+    }
   }
+  context.globalAlpha = 1;
   if (planetMode) {
     const radius = Math.min(width, height) * .07;
     const glow = context.createRadialGradient(cx - radius * .3, cy - radius * .35, radius * .05, cx, cy, radius * 1.5);
@@ -172,8 +219,10 @@ function drawChart(time) {
   }
 }
 
+let lastFrame = 0;
 function animate(time) {
-  drawChart(time || 0);
+  // Cap at ~40fps: the drift is slow, so full 60–120fps only burns battery.
+  if (!time || time - lastFrame > 24) { drawChart(time || 0); lastFrame = time || 0; }
   if (!reduceMotion) requestAnimationFrame(animate);
 }
 if (canvas && context) {
