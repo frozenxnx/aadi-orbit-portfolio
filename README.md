@@ -1,10 +1,16 @@
-# Aaditya Srivastava — Field Notes from Earth
+# Aaditya Srivastava — Observatory
 
-Personal portfolio at https://arvspace.vercel.app/
+Personal site at https://arvspace.vercel.app/. Plain HTML, CSS and JavaScript: no build step, no libraries.
 
-- Plain HTML, CSS and JavaScript, no build step and no dependencies.
-- The background is a hand-written WebGL galaxy (~64k stars on desktop). The camera flies through it as you scroll, and you can drag the hero to spin it.
-- Project diagrams, the skills constellation and the rocket launch are inline SVG + CSS.
-- Respects `prefers-reduced-motion` and falls back to a CSS gradient without WebGL.
+**Portfolio tab**
+- `sky.js` — a hand-written WebGL galaxy (~64k stars) over a domain-warped nebula shader. Warps in on load, the camera follows your scroll, and you can drag the hero to spin it. Also draws the stardust cursor trail.
+- Projects orbit a star; pick one to read about it.
+- Skills are a constellation that draws itself in.
+- **Orbit Lab**: a gravity sandbox. Drag and release to throw planets; the dotted line predicts the path. Add a companion star for chaos.
+- The header shows tonight's real moon phase, computed from the date.
 
-Edit content in `index.html`; galaxy settings (star counts, colours, camera path) live at the top of the galaxy block in `script.js`.
+**Field Guide tab** (`#guide`)
+- `bodies.js` — data for 15 bodies plus one fragment shader that ray-traces each world (craters, cloud decks, gas bands, Saturn's rings with shadow, a black hole, a pulsar).
+- `guide.js` — catalog, filters, live viewer (drag to rotate, ← → to browse), stats, size against Earth, random facts.
+
+Respects `prefers-reduced-motion`, and falls back gracefully without WebGL.
